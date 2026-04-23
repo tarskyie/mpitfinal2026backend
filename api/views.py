@@ -8,9 +8,18 @@ from .serializers import GroupSerializer, TaskSerializer, SolutionSerializer, Pa
 from .permissions import IsTeacher, IsStudent, IsParent
 
 class GroupViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        if [IsTeacher]:
+            return Group.objects.filter(teacher=user)
+
+        return Group.objects.filter(students=user)
+        
+        return Group.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(teacher=self.request.user)
@@ -27,8 +36,8 @@ class GroupViewSet(viewsets.ModelViewSet):
         if group.invite_code == invite_code:
             group.students.add(request.user)
             return Response({'status': 'student added'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Invalid invite code'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Invalid invite code'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
