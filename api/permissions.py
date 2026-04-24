@@ -11,3 +11,7 @@ class IsStudent(permissions.BasePermission):
 class IsParent(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated and request.user.user_type == 'parent'
+
+class IsTeacherOfSolutionGroup(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj.task.group.teacher

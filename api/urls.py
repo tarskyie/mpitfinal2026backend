@@ -6,7 +6,7 @@ router = DefaultRouter()
 # urls.py
 router.register(r'groups', GroupViewSet, basename='group')
 router.register(r'tasks', TaskViewSet)
-router.register(r'solutions', SolutionViewSet)
+router.register(r'solutions', SolutionViewSet, basename='solution')
 router.register(r'parent-tasks', ParentTaskViewSet, basename='parent-tasks')
 
 urlpatterns = [

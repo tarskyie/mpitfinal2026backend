@@ -18,6 +18,20 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'teacher', 'students', 'invite_code')
         read_only_fields = ('teacher', 'invite_code')
 
+class GroupJoinSerializer(serializers.ModelSerializer):
+    """
+    Serializer used specifically for the 'join' action.
+    Hides sensitive data while providing basic identification.
+    """
+    # We use a ReadOnlyField to show the teacher's name without exposing the User ID or full object
+    teacher_name = serializers.ReadOnlyField(source='teacher.get_full_name')
+
+    class Meta:
+        model = Group
+        # Only expose non-sensitive identifying information
+        fields = ['id', 'name', 'teacher_name']
+        read_only_fields = ['id', 'name', 'teacher_name']
+
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
@@ -37,7 +51,17 @@ class SolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Solution
         fields = ('id', 'task', 'student', 'text', 'grade', 'submitted_at')
-        read_only_fields = ('student', 'submitted_at')
+        read_only_fields = ('student', 'submitted_at', 'task', 'text')
+
+class SolutionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Solution
+        fields = ('task', 'text')
+
+class SolutionGradeUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Solution
+        fields = ('grade',)
 
 class ParentStudentSerializer(serializers.ModelSerializer):
     class Meta:
