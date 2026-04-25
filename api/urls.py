@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import GroupViewSet, TaskViewSet, SolutionViewSet, ParentTaskViewSet, ParentStudentDetailView
+from .views import GroupViewSet, TaskViewSet, SolutionViewSet, ParentTaskViewSet, ParentStudentDetailView, PreviewGradesView
 
 router = DefaultRouter()
 # urls.py
@@ -12,4 +12,5 @@ router.register(r'parent-student-detail', ParentStudentDetailView, basename='par
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('tasks/<int:task_id>/preview_grades/', PreviewGradesView.as_view(), name='preview-grades'),
 ]

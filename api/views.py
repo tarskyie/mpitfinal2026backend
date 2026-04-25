@@ -7,9 +7,59 @@ from .models import Group, Task, Solution, ParentStudent, User
 from .serializers import GroupSerializer, TaskSerializer, SolutionSerializer, ParentTaskSerializer, SolutionGradeUpdateSerializer, SolutionCreateSerializer, StudentSerializer
 from .permissions import IsTeacher, IsStudent, IsParent, IsTeacherOfSolutionGroup
 
+from rest_framework.views import APIView
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.conf import settings
+import openai
+
+class PreviewGradesView(APIView):
+    permission_classes = [IsTeacher]
+
+    def post(self, request, task_id):
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            return Response({"error": "Task not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if task.group.teacher != request.user:
+            return Response({"error": "You are not the teacher of this group"}, status=status.HTTP_403_FORBIDDEN)
+
+        solutions = Solution.objects.filter(task=task)
+        if not solutions.exists():
+            return Response({"message": "No solutions submitted for this task yet."}, status=status.HTTP_200_OK)
+
+        client = openai.OpenAI(
+            api_key=settings.OPENAI_API_KEY,
+            base_url=settings.OPENAI_API_URL,
+        )
+
+        results = []
+        for solution in solutions:
+            prompt = f"Task: {task.title}\n\nDescription: {task.description}\n\nStudent's solution:\n{solution.text}\n\n---\n\nGrade the solution on a scale of 1 to 10."
+            
+            try:
+                completion = client.chat.completions.create(
+                    model=settings.OPENAI_API_MODEL,
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant that grades student solutions."},
+                        {"role": "user", "content": prompt},
+                    ],
+                )
+                
+                preview_grade = completion.choices[0].message.content.strip()
+                results.append({
+                    "solution_id": solution.id,
+                    "student_id": solution.student.id,
+                    "student_name": solution.student.username,
+                    "preview_grade": preview_grade
+                })
+
+            except Exception as e:
+                return Response({"error": f"An error occurred with the AI service: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(results, status=status.HTTP_200_OK)
 
 class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()

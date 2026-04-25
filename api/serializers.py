@@ -35,7 +35,7 @@ class GroupJoinSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ('id', 'title', 'group', 'expiration_date', 'created_by')
+        fields = ('id', 'title', 'description', 'group', 'expiration_date', 'created_by')
         read_only_fields = ('created_by',)
 
 class ParentTaskSerializer(serializers.ModelSerializer):

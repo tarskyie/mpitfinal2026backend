@@ -24,6 +24,7 @@ class Group(models.Model):
 
 class Task(models.Model):
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='tasks')
     expiration_date = models.DateTimeField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tasks')
