@@ -40,10 +40,11 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class ParentTaskSerializer(serializers.ModelSerializer):
     status = serializers.CharField()
+    group_name = serializers.CharField(source='group.name', read_only=True)
 
     class Meta:
         model = Task
-        fields = ('id', 'title', 'group', 'expiration_date', 'created_by', 'status')
+        fields = ('id', 'title', 'group', 'expiration_date', 'created_by', 'status', 'group_name')
         read_only_fields = ('created_by',)
 
 
@@ -67,3 +68,8 @@ class ParentStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParentStudent
         fields = ('id', 'parent', 'student')
+
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'username', 'email')

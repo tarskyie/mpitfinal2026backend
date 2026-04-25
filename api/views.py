@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Group, Task, Solution, ParentStudent, User
-from .serializers import GroupSerializer, TaskSerializer, SolutionSerializer, ParentTaskSerializer, SolutionGradeUpdateSerializer, SolutionCreateSerializer
+from .serializers import GroupSerializer, TaskSerializer, SolutionSerializer, ParentTaskSerializer, SolutionGradeUpdateSerializer, SolutionCreateSerializer, StudentSerializer
 from .permissions import IsTeacher, IsStudent, IsParent, IsTeacherOfSolutionGroup
 
 from rest_framework import viewsets, status, permissions
@@ -119,3 +119,22 @@ class ParentTaskViewSet(viewsets.ReadOnlyModelViewSet):
             return tasks
         except ParentStudent.DoesNotExist:
             return Task.objects.none()
+
+class ParentStudentDetailView(viewsets.ReadOnlyModelViewSet):
+    serializer_class = StudentSerializer
+    permission_classes = [IsParent]
+
+    def get_queryset(self):
+        try:
+            parent_student = ParentStudent.objects.get(parent=self.request.user)
+            student = parent_student.student
+            return User.objects.filter(id=student.id)
+        except ParentStudent.DoesNotExist:
+            return User.objects.none()
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset.exists():
+            return Response({"detail": "No student linked to this parent."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(queryset.first())
+        return Response(serializer.data)

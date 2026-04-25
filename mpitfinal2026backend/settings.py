@@ -138,6 +138,7 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     "https://localhost:7162",
+    'https://ivantarsky-project.vercel.app',
 ]
 
 DJOSER = {
